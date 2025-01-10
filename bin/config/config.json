@@ -1,4 +1,4 @@
 {
-    "serverIp": "192.168.0.111",
+    "serverIp": "http://192.168.0.111:8080",
     "IsTechnicalWork": false
 }
