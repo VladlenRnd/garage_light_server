@@ -1,6 +1,6 @@
 {
     "fullServerUrl": "http://178.219.87.46:223",
     "IsTechnicalWork": false,
-    "autoOffMs": 1000,
+    "autoOffMs": 0,
     "isUsedRelayOffFromServer": false
 }
