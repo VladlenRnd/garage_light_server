@@ -6,8 +6,7 @@ import 'user_model.dart';
 const String _filePath = "users.json";
 
 Future<List<GarageUser>> readUsersFromFile() async {
-  final currentDir = Directory.current.path;
-  final filePath = '$currentDir\\bin\\$_filePath';
+  final filePath = '${Directory.current.path}\\$_filePath';
 
   final file = File(filePath);
 
