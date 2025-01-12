@@ -1,14 +1,14 @@
 [
     {
-        "garageNumber": "85",
+        "garageNumber": "arduino",
+        "key": "main"
+    },
+    {
+        "garageNumber": "81",
         "key": "qwerty"
     },
     {
         "garageNumber": "80",
         "key": "123"
-    },
-    {
-        "garageNumber": "111",
-        "key": "qqq"
     }
 ]

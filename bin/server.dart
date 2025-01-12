@@ -48,7 +48,8 @@ Future<Response> handleRequest(Request request) async {
 
 Future<Response> longPollingHandler(Request request) async {
   // Ждем, пока не изменится состояние света
-  await for (var state in eventStreamController.stream) {
+
+  await for (bool state in eventStreamController.stream) {
     // Когда состояние изменилось, отправляем ответ на запрос Arduino
     _lightStatus = state;
     return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
