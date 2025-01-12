@@ -7,6 +7,7 @@ import 'package:shelf_router/shelf_router.dart';
 import 'tools.dart';
 import 'user_model.dart';
 import 'package:rxdart/rxdart.dart';
+import 'ui_logs.dart';
 
 final Logger _log = Logger('GarageServer');
 
@@ -15,15 +16,22 @@ bool _lightStatus = false;
 
 Future<Response> getStatusRequest(Request request) async => Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
 
+Future<Response> getLogsRequest(Request request) async {
+  List<dynamic> logs = await getLogAction();
+
+  return Response.ok(logs.isEmpty ? "Logs Is Empty" : getHtmlLogs(logs), headers: {'Content-Type': 'text/html'});
+}
+
 Future<Response> handleRequest(Request request) async {
   if (request.method == 'POST') {
     switch (request.url.path) {
       case "turnLightOff":
         {
-          if (await getIsUserValid(GarageUser.fromJson(jsonDecode(await request.readAsString())))) {
+          GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
+          if (await getIsUserValid(user)) {
             eventStreamController.add(false);
             _lightStatus = false;
-            //lightIsOn = false;
+            setLogAction(action: "OFF", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             return Response.ok(jsonEncode({'status': 'success', "LightIs": true}));
           } else {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
@@ -31,10 +39,11 @@ Future<Response> handleRequest(Request request) async {
         }
       case "turnLightOn":
         {
-          if (await getIsUserValid(GarageUser.fromJson(jsonDecode(await request.readAsString())))) {
+          GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
+          if (await getIsUserValid(user)) {
             eventStreamController.add(true);
             _lightStatus = true;
-            //lightIsOn = true;
+            setLogAction(action: "ON", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             return Response.ok(jsonEncode({'status': 'success', "LightIs": false}));
           } else {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
@@ -66,6 +75,7 @@ void main(List<String> args) async {
   final router = Router()
     ..get('/longpoll', longPollingHandler)
     ..get('/getStatus', getStatusRequest)
+    ..get('/getLogs', getLogsRequest)
     ..post('/turnLightOff', handleRequest)
     ..post('/turnLightOn', handleRequest);
 
