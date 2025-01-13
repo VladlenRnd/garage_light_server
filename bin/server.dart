@@ -29,10 +29,11 @@ Future<Response> handleRequest(Request request) async {
         {
           GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
           if (await getIsUserValid(user)) {
-            eventStreamController.add(false);
             _lightStatus = false;
+            eventStreamController.add(_lightStatus);
+
             setLogAction(action: "OFF", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
-            return Response.ok(jsonEncode({'status': 'success', "LightIs": true}));
+            return Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
           } else {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
           }
@@ -41,10 +42,23 @@ Future<Response> handleRequest(Request request) async {
         {
           GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
           if (await getIsUserValid(user)) {
-            eventStreamController.add(true);
             _lightStatus = true;
+            eventStreamController.add(_lightStatus);
+
             setLogAction(action: "ON", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
-            return Response.ok(jsonEncode({'status': 'success', "LightIs": false}));
+            return Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
+          } else {
+            return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
+          }
+        }
+      case "setCurrentStatus":
+        {
+          var data = jsonDecode(await request.readAsString());
+          GarageUser user = GarageUser.fromJson(data);
+          if (await getIsUserValid(user)) {
+            _lightStatus = data["LightIs"];
+            eventStreamController.add(_lightStatus);
+            return Response.ok(jsonEncode({'status': 'success'}));
           } else {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
           }
@@ -77,6 +91,7 @@ void main(List<String> args) async {
     ..get('/getStatus', getStatusRequest)
     ..get('/getLogs', getLogsRequest)
     ..post('/turnLightOff', handleRequest)
+    ..post('/setCurrentStatus', handleRequest)
     ..post('/turnLightOn', handleRequest);
 
   final handler = const Pipeline().addMiddleware(logRequests()).addHandler(router.call);
