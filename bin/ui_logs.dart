@@ -15,8 +15,16 @@ String getHtmlLogs(List<dynamic> logs) {
     final garageNumber = entry.key;
     final logsForGarage = entry.value;
 
+    // Подсчитываем количество записей, включений и выключений
+    final totalRecords = logsForGarage.length;
+    final lightOns = logsForGarage.where((log) => log['action'] == 'ON').length;
+    final lightOffs = logsForGarage.where((log) => log['action'] == 'OFF').length;
+
     return '''
       <h2>Garage $garageNumber</h2>
+      <p>Total records: $totalRecords</p>
+      <p>Lights turned ON: $lightOns</p>
+      <p>Lights turned OFF: $lightOffs</p>
       <table id="logTable_$garageNumber">
         <thead>
           <tr>
