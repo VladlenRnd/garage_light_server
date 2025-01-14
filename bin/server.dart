@@ -97,6 +97,6 @@ void main(List<String> args) async {
   final handler = const Pipeline().addMiddleware(logRequests()).addHandler(router.call);
 
   //final server = await shelf_io.serve(handler, '192.168.0.111', 8080);
-  final server = await shelf_io.serve(handler, '0.0.0.0', 223);
+  final server = await shelf_io.serve(handler, '0.0.0.0', 3000);
   _log.info('Сервер запущен на http://${server.address.host}:${server.port}');
 }
