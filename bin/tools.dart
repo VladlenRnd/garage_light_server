@@ -4,15 +4,14 @@ import 'package:intl/intl.dart';
 
 import 'user_model.dart';
 
-const String _filePath = "users.json";
+const String _pathToFileUsers = "users.json";
+const String _pathToFileLog = "logs.json";
 
 Future<List<GarageUser>> readUsersFromFile() async {
-  final filePath = '${Directory.current.path}\\$_filePath';
-
-  final file = File(filePath);
+  final file = File(_pathToFileUsers);
 
   if (!await file.exists()) {
-    throw Exception('File not found: $filePath');
+    throw Exception('File not found: $_pathToFileUsers');
   }
 
   final content = await file.readAsString();
@@ -35,7 +34,7 @@ Future<bool> getIsUserValid(GarageUser user) async {
 //******************LOGER*********************** */
 
 Future<List<dynamic>> getLogAction() async {
-  final File logFile = File('logs.json');
+  final File logFile = File(_pathToFileLog);
 
   // Читаем существующие логи
   //String logs = "Log file is Empty";
