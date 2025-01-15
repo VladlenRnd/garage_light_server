@@ -57,6 +57,7 @@ Future<Response> handleRequest(Request request) async {
           var data = jsonDecode(await request.readAsString());
           GarageUser user = GarageUser.fromJson(data);
           if (await getIsUserValid(user)) {
+            _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
             eventStreamController.add(_lightStatus);
             return Response.ok(jsonEncode({'status': 'success'}));
@@ -74,7 +75,6 @@ Future<Response> longPollingHandler(Request request) async {
   // Ждем, пока не изменится состояние света
 
   if (_neadInitFromRelay) {
-    _neadInitFromRelay = false;
     return Response.ok(jsonEncode({'status': 'success', 'message': "neadGetStatus"}));
   }
 
