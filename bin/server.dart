@@ -57,7 +57,7 @@ Future<Response> handleRequest(Request request) async {
           var data = jsonDecode(await request.readAsString());
           GarageUser user = GarageUser.fromJson(data);
           if (await getIsUserValid(user)) {
-            // _neadInitFromRelay = false;
+            _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
             eventStreamController.add(_lightStatus);
             return Response.ok(jsonEncode({'status': 'success'}));
@@ -74,9 +74,9 @@ Future<Response> handleRequest(Request request) async {
 Future<Response> longPollingHandler(Request request) async {
   // Ждем, пока не изменится состояние света
 
-  // if (_neadInitFromRelay) {
-  //   return Response.ok(jsonEncode({'status': 'success', 'message': "neadGetStatus"}));
-  // }
+  if (_neadInitFromRelay) {
+    return Response.ok(jsonEncode({'status': 'success', 'message': "neadGetStatus"}));
+  }
 
   await for (bool state in eventStreamController.stream) {
     // Когда состояние изменилось, отправляем ответ на запрос Arduino
