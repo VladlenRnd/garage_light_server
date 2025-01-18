@@ -2,5 +2,6 @@
     "fullServerUrl": "http://178.219.87.46:3000",
     "IsTechnicalWork": false,
     "autoOffMs": 9000000,
-    "isUsedRelayOffFromServer": true
+    "isUsedRelayOffFromServer": true,
+    "lastAppVersion": "1.0.0"
 }
