@@ -1,7 +1,9 @@
 {
     "fullServerUrl": "http://178.219.87.46:3000",
+    "fullServerUrlTest": "http://178.219.87.46:223",
     "IsTechnicalWork": false,
     "autoOffMs": 9000000,
     "isUsedRelayOffFromServer": true,
+    "urlToApp": "",
     "lastAppVersion": "1.0.0"
 }
