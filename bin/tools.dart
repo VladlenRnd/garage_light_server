@@ -49,7 +49,7 @@ Future<List<dynamic>> getLogAction() async {
   return [];
 }
 
-void setLogAction({required String garageNumber, required String userKey, required String action}) async {
+Future<void> setLogAction({required String garageNumber, required String userKey, required String action}) async {
   final File logFile = File('logs.json');
 
   // Читаем существующие логи

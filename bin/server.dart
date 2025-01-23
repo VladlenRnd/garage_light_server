@@ -11,9 +11,12 @@ import 'ui_logs.dart';
 
 final Logger _log = Logger('GarageServer');
 
+final PublishSubject<bool> eventLongPollStreamController = PublishSubject<bool>();
 final PublishSubject<bool> eventStreamController = PublishSubject<bool>();
 bool _lightStatus = false;
 bool _neadInitFromRelay = true;
+
+const int _waitMillisecondsRelay = 10000;
 
 Future<Response> getStatusRequest(Request request) async => Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
 
@@ -29,36 +32,53 @@ Future<Response> handleRequest(Request request) async {
       case "turnLightOff":
         {
           GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
-          if (await getIsUserValid(user)) {
-            _lightStatus = false;
-            eventStreamController.add(_lightStatus);
 
-            setLogAction(action: "OFF", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
-            return Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
-          } else {
+          if (!await getIsUserValid(user)) {
+            await setLogAction(
+                action: "Trying to OFF - Incorrect User Error", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
+          }
+
+          eventLongPollStreamController.add(false);
+
+          try {
+            final bool state = await eventStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsRelay)).first;
+            await setLogAction(action: "OFF", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
+            return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
+          } catch (e) {
+            await setLogAction(action: "Trying to OFF - Timeout error", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
+            return Response.ok(jsonEncode({'status': 'error', 'message': 'timeout'}));
           }
         }
       case "turnLightOn":
         {
           GarageUser user = GarageUser.fromJson(jsonDecode(await request.readAsString()));
-          if (await getIsUserValid(user)) {
-            _lightStatus = true;
-            eventStreamController.add(_lightStatus);
 
-            setLogAction(action: "ON", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
-            return Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
-          } else {
+          if (!await getIsUserValid(user)) {
+            await setLogAction(action: "Trying to ON - Incorrect User Error", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
           }
+
+          eventLongPollStreamController.add(true);
+
+          try {
+            final bool state = await eventStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsRelay)).first;
+            await setLogAction(action: "ON", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
+            return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
+          } catch (e) {
+            await setLogAction(action: "Trying to ON - Timeout error", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
+            return Response.ok(jsonEncode({'status': 'error', 'message': 'timeout'}));
+          }
         }
-      case "setCurrentStatus":
+      case "setCurrentStatusRealy":
         {
           var data = jsonDecode(await request.readAsString());
           GarageUser user = GarageUser.fromJson(data);
           if (await getIsUserValid(user)) {
+            await setLogAction(action: "Set status realy: $_lightStatus", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
+            eventLongPollStreamController.add(_lightStatus);
             eventStreamController.add(_lightStatus);
             return Response.ok(jsonEncode({'status': 'success'}));
           } else {
@@ -78,9 +98,7 @@ Future<Response> longPollingHandler(Request request) async {
     return Response.ok(jsonEncode({'status': 'success', 'message': "neadGetStatus"}));
   }
 
-  await for (bool state in eventStreamController.stream) {
-    // Когда состояние изменилось, отправляем ответ на запрос Arduino
-    _lightStatus = state;
+  await for (bool state in eventLongPollStreamController.stream) {
     return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
   }
   return Response.notFound('Error');
@@ -97,12 +115,15 @@ void main(List<String> args) async {
     ..get('/getStatus', getStatusRequest)
     ..get('/getLogs', getLogsRequest)
     ..post('/turnLightOff', handleRequest)
-    ..post('/setCurrentStatus', handleRequest)
+    ..post('/setCurrentStatusRealy', handleRequest)
     ..post('/turnLightOn', handleRequest);
 
   final handler = const Pipeline().addMiddleware(logRequests()).addHandler(router.call);
 
   //final server = await shelf_io.serve(handler, '192.168.0.111', 8080);3000
+
+  //real port 3000
+  // test 223
   final server = await shelf_io.serve(handler, '0.0.0.0', 3000);
   _log.info('Сервер запущен на http://${server.address.host}:${server.port}');
 }
