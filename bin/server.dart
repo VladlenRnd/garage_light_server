@@ -75,11 +75,11 @@ Future<Response> handleRequest(Request request) async {
           var data = jsonDecode(await request.readAsString());
           GarageUser user = GarageUser.fromJson(data);
           if (await getIsUserValid(user)) {
-            await setLogAction(action: "Set status realy: $_lightStatus", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
             eventLongPollStreamController.add(_lightStatus);
             eventStreamController.add(_lightStatus);
+            await setLogAction(action: "Set status realy: $_lightStatus", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
             return Response.ok(jsonEncode({'status': 'success'}));
           } else {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
