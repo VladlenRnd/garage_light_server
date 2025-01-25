@@ -77,7 +77,11 @@ Future<Response> handleRequest(Request request) async {
           if (await getIsUserValid(user)) {
             _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
-            await setLogAction(action: "Set status realy: $_lightStatus", garageNumber: user.garageNumber ?? "NULL", userKey: user.key ?? "NULL");
+            await setLogAction(
+              action: "Return relay status is: $_lightStatus",
+              garageNumber: user.garageNumber ?? "NULL",
+              userKey: "COMMAND: setCurrentStatusRealy",
+            );
             eventLongPollStreamController.add(_lightStatus);
             eventStreamController.add(_lightStatus);
             return Response.ok(jsonEncode({'status': 'success'}));
