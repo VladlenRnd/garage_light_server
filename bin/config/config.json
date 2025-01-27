@@ -4,8 +4,8 @@
     "IsTechnicalWork": false,
     "isUsedRelayOffFromServer": true,
     "autoOffTime": "02:30:00",
-    "reportStatusRelayTime": "03:00:00",
-    "getNewConfigTime": "03:00:00",
+    "reportStatusRelayTime": "03:00:10",
+    "getNewConfigTime": "00:00:10",
     "urlToApp": "",
     "lastAppVersion": "1.0.0"
 }
