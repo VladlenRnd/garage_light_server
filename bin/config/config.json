@@ -2,8 +2,10 @@
     "fullServerUrl": "http://178.219.87.46:3000",
     "fullServerUrlTest": "http://178.219.87.46:223",
     "IsTechnicalWork": false,
-    "autoOffMs": 9000000,
     "isUsedRelayOffFromServer": true,
+    "autoOffTime": "02:30:00",
+    "reportStatusRelayTime": "03:00:00",
+    "getNewConfigTime": "03:00:00",
     "urlToApp": "",
     "lastAppVersion": "1.0.0"
 }
