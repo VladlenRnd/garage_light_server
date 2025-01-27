@@ -70,17 +70,19 @@ Future<Response> handleRequest(Request request) async {
             return Response.ok(jsonEncode({'status': 'error', 'message': 'timeout'}));
           }
         }
-      case "setCurrentStatusRealy":
+      case "setCurrentStatusRelay":
         {
           var data = jsonDecode(await request.readAsString());
           GarageUser user = GarageUser.fromJson(data);
+          String? message;
           if (await getIsUserValid(user)) {
             _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
+            message = data["message"];
             await setLogAction(
-              action: "Return relay status is: $_lightStatus",
+              action: "Relay status is: $_lightStatus",
               garageNumber: user.garageNumber ?? "NULL",
-              userKey: "COMMAND: setCurrentStatusRealy",
+              userKey: "$message",
             );
             eventLongPollStreamController.add(_lightStatus);
             eventStreamController.add(_lightStatus);
@@ -120,8 +122,8 @@ void main(List<String> args) async {
     ..get('/getStatus', getStatusRequest)
     ..get('/getLogs', getLogsRequest)
     ..post('/turnLightOff', handleRequest)
-    ..post('/setCurrentStatusRealy', handleRequest)
-    ..post('/turnLightOn', handleRequest);
+    ..post('/turnLightOn', handleRequest)
+    ..post('/setCurrentStatusRelay', handleRequest);
 
   final handler = const Pipeline().addMiddleware(logRequests()).addHandler(router.call);
 
