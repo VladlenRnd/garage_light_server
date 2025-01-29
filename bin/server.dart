@@ -16,7 +16,7 @@ final PublishSubject<bool> eventStreamController = PublishSubject<bool>();
 bool _lightStatus = false;
 bool _neadInitFromRelay = true;
 
-const int _waitMillisecondsRelay = 10000;
+const int _waitMillisecondsRelay = 15000;
 
 Future<Response> getStatusRequest(Request request) async => Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
 
