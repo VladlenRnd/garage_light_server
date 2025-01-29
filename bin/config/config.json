@@ -6,6 +6,6 @@
     "autoOffTime": "02:30:00",
     "reportStatusRelayTime": "03:00:00",
     "getNewConfigTime": "03:00:00",
-    "urlToApp": "",
+    "urlToApp": "https://github.com/VladlenRnd/garage_light_server/releases/download/server_version_1/Garage.Light.v1.0.0.apk",
     "lastAppVersion": "1.0.0"
 }
