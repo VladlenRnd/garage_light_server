@@ -1,11 +1,11 @@
 {
     "fullServerUrl": "http://178.219.87.46:3000",
     "fullServerUrlTest": "http://178.219.87.46:223",
-    "IsTechnicalWork": false,
+    "IsTechnicalWork": true,
     "isUsedRelayOffFromServer": true,
-    "autoOffTime": "02:30:00",
-    "reportStatusRelayTime": "03:00:00",
-    "getNewConfigTime": "03:00:00",
+    "autoOffTime": "00:10:00",
+    "reportStatusRelayTime": "00:20:00",
+    "getNewConfigTime": "01:00:00",
     "urlToApp": "https://github.com/VladlenRnd/garage_light_server/releases/download/server_version_1/Garage.Light.v1.0.0.apk",
     "lastAppVersion": "1.0.0"
 }
