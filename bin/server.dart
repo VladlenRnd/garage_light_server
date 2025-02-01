@@ -20,6 +20,12 @@ const int _waitMillisecondsRelay = 15000;
 
 Future<Response> getStatusRequest(Request request) async => Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
 
+Future<Response> getLogsJsonRequest(Request request) async {
+  String logs = await getLogActionJson();
+
+  return Response.ok(logs.isEmpty ? "Logs Is Empty" : logs, headers: {'Content-Type': 'application/json'});
+}
+
 Future<Response> getLogsRequest(Request request) async {
   List<dynamic> logs = await getLogAction();
 
@@ -121,6 +127,7 @@ void main(List<String> args) async {
     ..get('/longpoll', longPollingHandler)
     ..get('/getStatus', getStatusRequest)
     ..get('/getLogs', getLogsRequest)
+    ..get('/getLogsJson', getLogsJsonRequest)
     ..post('/turnLightOff', handleRequest)
     ..post('/turnLightOn', handleRequest)
     ..post('/setCurrentStatusRelay', handleRequest);

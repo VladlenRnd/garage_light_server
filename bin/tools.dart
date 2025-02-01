@@ -33,6 +33,22 @@ Future<bool> getIsUserValid(GarageUser user) async {
 
 //******************LOGER*********************** */
 
+Future<String> getLogActionJson() async {
+  final File logFile = File(_pathToFileLog);
+
+  // Читаем существующие логи
+  //String logs = "Log file is Empty";
+  if (await logFile.exists()) {
+    final content = await logFile.readAsString();
+    if (content.isNotEmpty) {
+      return content;
+    }
+  }
+
+  //Возвращаем Логи
+  return "";
+}
+
 Future<List<dynamic>> getLogAction() async {
   final File logFile = File(_pathToFileLog);
 

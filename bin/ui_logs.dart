@@ -15,6 +15,59 @@ String getHtmlLogs(List<dynamic> logs) {
     final garageNumber = entry.key;
     final logsForGarage = entry.value;
 
+    // Группируем логи по датам
+    Map<String, Map<String, List<dynamic>>> groupedByDateAndMonth = {};
+
+    for (var log in logsForGarage) {
+      final date = log['time'].split(' ')[0]; // Извлекаем только дату
+      final month = log['time'].split(' ')[0].split('/')[1]; // Извлекаем месяц
+
+      if (!groupedByDateAndMonth.containsKey(month)) {
+        groupedByDateAndMonth[month] = {};
+      }
+
+      if (!groupedByDateAndMonth[month]!.containsKey(date)) {
+        groupedByDateAndMonth[month]![date] = [];
+      }
+
+      groupedByDateAndMonth[month]![date]?.add(log);
+    }
+
+    // Генерируем HTML для раскрывающихся списков по месяцам и дням
+    String monthAndDateCollapsibleHtml = groupedByDateAndMonth.entries.map((monthEntry) {
+      final month = monthEntry.key;
+      final groupedByDate = monthEntry.value;
+
+      String dateCollapsibleHtml = groupedByDate.entries.map((dateEntry) {
+        final date = dateEntry.key;
+        final logsForDate = dateEntry.value;
+
+        String logsHtml = logsForDate.map((log) {
+          return '''
+            <p class="log-time">
+              <span class="log-date">${log['time']}</span>
+              <span class="log-action">${log['action']}</span>
+            </p>
+            <hr class="log-divider">
+          ''';
+        }).join();
+
+        return '''
+          <button class="collapsible">$date</button>
+          <div class="content">
+            $logsHtml
+          </div>
+        ''';
+      }).join();
+
+      return '''
+        <button class="collapsible">Месяц $month</button>
+        <div class="content">
+          $dateCollapsibleHtml
+        </div>
+      ''';
+    }).join();
+
     // Подсчитываем количество записей, включений и выключений
     final totalRecords = logsForGarage.length;
     final lightOns = logsForGarage.where((log) => log['action'] == 'ON').length;
@@ -25,26 +78,9 @@ String getHtmlLogs(List<dynamic> logs) {
       <p>Total records: $totalRecords</p>
       <p>Lights turned ON: $lightOns</p>
       <p>Lights turned OFF: $lightOffs</p>
-      <table id="logTable_$garageNumber">
-        <thead>
-          <tr>
-            <th class="sortable" onclick="sortTable(0, '$garageNumber')">Time</th>
-            <th class="sortable" onclick="sortTable(1, '$garageNumber')">Key</th>
-            <th class="sortable" onclick="sortTable(2, '$garageNumber')">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${logsForGarage.map((log) {
-      return '''
-              <tr>
-                <td>${log['time']}</td>
-                <td>${log['key']}</td>
-                <td>${log['action']}</td>
-              </tr>
-            ''';
-    }).join()}
-        </tbody>
-      </table>
+      <div>
+        $monthAndDateCollapsibleHtml
+      </div>
       <br>
     ''';
   }).join();
@@ -69,8 +105,51 @@ String getHtmlLogs(List<dynamic> logs) {
     th {
       background-color: #f2f2f2;
     }
-    .sortable:hover {
+    .log-time {
+      margin-bottom: 15px;
+      padding-left: 10px;
+    }
+    .log-date {
+      font-weight: bold;
+      color: #333;
+      margin-right: 10px;
+    }
+    .log-divider {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 10px 0;
+}
+    .collapsible {
+      background-color: #777;
+      color: white;
       cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 15px;
+    }
+    .active, .collapsible:hover {
+      background-color: #555;
+    }
+    .content {
+      padding: 0 18px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+    }
+    .log-entry {
+      margin-bottom: 15px;
+      padding-left: 10px;
+    }
+    .log-time {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    .log-action {
+      color: #666;
     }
   </style>
 </head>
@@ -78,34 +157,17 @@ String getHtmlLogs(List<dynamic> logs) {
   <h1>Logs</h1>
   $groupedLogsHtml
   <script>
-    function sortTable(n, garageNumber) {
-      var table = document.getElementById("logTable_" + garageNumber);
-      var rows = table.rows;
-      var switching = true;
-      var dir = "asc"; 
-      while (switching) {
-        switching = false;
-        var shouldSwitch = false;
-        for (var i = 1; i < (rows.length - 1); i++) {
-          var x = rows[i].getElementsByTagName("TD")[n];
-          var y = rows[i + 1].getElementsByTagName("TD")[n];
-          if (dir == "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() || 
-              dir == "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-        if (shouldSwitch) {
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
+    var coll = document.getElementsByClassName("collapsible");
+    for (var i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
         } else {
-          if (dir == "asc") {
-            dir = "desc";
-          } else {
-            break;
-          }
+          content.style.display = "block";
         }
-      }
+      });
     }
   </script>
 </body>
