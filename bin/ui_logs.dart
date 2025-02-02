@@ -47,6 +47,8 @@ String getHtmlLogs(List<dynamic> logs) {
             <p class="log-time">
               <span class="log-date">${log['time']}</span>
               <span class="log-action">${log['action']}</span>
+              <br>
+              <span class="log-action">${log['key']}</span>
             </p>
             <hr class="log-divider">
           ''';

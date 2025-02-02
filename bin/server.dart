@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:shelf/shelf.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -17,6 +18,8 @@ bool _lightStatus = false;
 bool _neadInitFromRelay = true;
 
 const int _waitMillisecondsRelay = 15000;
+
+const int _waitMillisecondsLongPool = 58000; // 58 sec
 
 Future<Response> getStatusRequest(Request request) async => Response.ok(jsonEncode({'status': 'success', "LightIs": _lightStatus}));
 
@@ -105,22 +108,23 @@ Future<Response> handleRequest(Request request) async {
 }
 
 Future<Response> longPollingHandler(Request request) async {
-  // Ждем, пока не изменится состояние света
-
   if (_neadInitFromRelay) {
     return Response.ok(jsonEncode({'status': 'success', 'message': "neadGetStatus"}));
   }
 
-  await for (bool state in eventLongPollStreamController.stream) {
+  try {
+    final bool state = await eventLongPollStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsLongPool)).first;
     return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
+  } catch (e) {
+    return Response.internalServerError(body: 'long pool timeout');
   }
-  return Response.notFound('Error');
 }
 
 void main(List<String> args) async {
   Logger.root.level = Level.ALL; // Вывод всех логов
+  // Logger.root.level = Level.OFF;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
+    print('(${record.level.name}- ${DateFormat("dd-MM-yyyy | HH:mm:ss").format(record.time)}) - ${record.message}');
   });
 
   final router = Router()
@@ -132,12 +136,21 @@ void main(List<String> args) async {
     ..post('/turnLightOn', handleRequest)
     ..post('/setCurrentStatusRelay', handleRequest);
 
-  final handler = const Pipeline().addMiddleware(logRequests()).addHandler(router.call);
+  final handler = const Pipeline().addMiddleware(logRequests(
+    logger: (message, isError) {
+      if (isError) {
+        Logger('ERROR').warning(message);
+      } else {
+        Logger('HTTP').info(message);
+      }
+    },
+  )).addHandler(router.call);
 
   //final server = await shelf_io.serve(handler, '192.168.0.111', 8080);3000
 
   //real port 3000
   // test 223
+
   final server = await shelf_io.serve(handler, '0.0.0.0', 3000);
   _log.info('Сервер запущен на http://${server.address.host}:${server.port}');
 }
