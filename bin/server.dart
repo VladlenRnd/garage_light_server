@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:intl/intl.dart';
 import 'package:shelf/shelf.dart';
 import 'dart:async';
@@ -16,6 +18,8 @@ final PublishSubject<bool> eventLongPollStreamController = PublishSubject<bool>(
 final PublishSubject<bool> eventStreamController = PublishSubject<bool>();
 bool _lightStatus = false;
 bool _neadInitFromRelay = true;
+
+String arduinoFirmwareVersion = "-";
 
 const int _waitMillisecondsRelay = 15000;
 
@@ -88,6 +92,7 @@ Future<Response> handleRequest(Request request) async {
             _neadInitFromRelay = false;
             _lightStatus = data["LightIs"];
             message = data["message"];
+            arduinoFirmwareVersion = data["version"] ?? "Arduino send NULL";
             await setLogAction(
               action: "Relay status is: $_lightStatus",
               garageNumber: user.garageNumber ?? "NULL",
@@ -120,6 +125,27 @@ Future<Response> longPollingHandler(Request request) async {
   }
 }
 
+//***************update******************** */
+Future<Response> getCurrentVersionFirmware(Request request) async {
+  String version = await getVersionFirmware();
+  return Response.ok(version, headers: {'Content-Type': 'application/json'});
+}
+
+Future<Response> getCurrentFirmware(Request request) async {
+  File file = getFirmware();
+  if (file.existsSync()) {
+    int length = file.lengthSync(); // Получаем размер файла
+    return Response.ok(file.openRead(), headers: {
+      HttpHeaders.contentTypeHeader: 'application/octet-stream',
+      HttpHeaders.contentLengthHeader: length.toString(), // Указываем размер
+    });
+  } else {
+    return Response.notFound('Файл прошивки не найден');
+  }
+}
+
+//***************************************** */
+
 void main(List<String> args) async {
   Logger.root.level = Level.ALL; // Вывод всех логов
   // Logger.root.level = Level.OFF;
@@ -132,6 +158,8 @@ void main(List<String> args) async {
     ..get('/getStatus', getStatusRequest)
     ..get('/getLogs', getLogsRequest)
     ..get('/getLogsJson', getLogsJsonRequest)
+    ..get('/getSoftware/version', getCurrentVersionFirmware)
+    ..get('/getSoftware/firmware', getCurrentFirmware)
     ..post('/turnLightOff', handleRequest)
     ..post('/turnLightOn', handleRequest)
     ..post('/setCurrentStatusRelay', handleRequest);

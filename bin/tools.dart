@@ -6,6 +6,8 @@ import 'user_model.dart';
 
 const String _pathToFileUsers = "users.json";
 const String _pathToFileLog = "logs.json";
+const String _pathToFileVersion = "versionFirmware.json";
+const String _pathToFileFirmware = "garage_light_device.ino.bin";
 
 Future<List<GarageUser>> readUsersFromFile() async {
   final file = File(_pathToFileUsers);
@@ -29,6 +31,22 @@ Future<bool> getIsUserValid(GarageUser user) async {
     }
   }
   return false;
+}
+
+File getFirmware() => File(_pathToFileFirmware);
+
+Future<String> getVersionFirmware() async {
+  final File file = File(_pathToFileVersion);
+
+  if (await file.exists()) {
+    final content = await file.readAsString();
+    if (content.isNotEmpty) {
+      return content;
+    }
+  }
+
+  //Возвращаем Логи
+  return "";
 }
 
 //******************LOGER*********************** */

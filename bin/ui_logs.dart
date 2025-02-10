@@ -1,3 +1,5 @@
+import "server.dart";
+
 String getHtmlLogs(List<dynamic> logs) {
   // Группируем логи по номеру гаража
   Map<String, List<dynamic>> groupedLogs = {};
@@ -157,6 +159,7 @@ String getHtmlLogs(List<dynamic> logs) {
 </head>
 <body>
   <h1>Logs</h1>
+  <h3>Arduino current version: $arduinoFirmwareVersion</3>
   $groupedLogsHtml
   <script>
     var coll = document.getElementsByClassName("collapsible");
