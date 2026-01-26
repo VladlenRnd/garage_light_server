@@ -14,12 +14,12 @@ import 'ui_logs.dart';
 
 final Logger _log = Logger('GarageServer');
 
-final PublishSubject<bool> eventLongPollStreamController = PublishSubject<bool>();
+final PublishSubject<(bool, String)> eventLongPollStreamController = PublishSubject<(bool, String)>();
 final PublishSubject<bool> eventStreamController = PublishSubject<bool>();
 bool _lightStatus = false;
 bool _neadInitFromRelay = true;
 
-String arduinoFirmwareVersion = "-";
+String arduinoFirmwareVersion = "---";
 
 const int _waitMillisecondsRelay = 15000;
 
@@ -52,7 +52,7 @@ Future<Response> handleRequest(Request request) async {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
           }
 
-          eventLongPollStreamController.add(false);
+          eventLongPollStreamController.add((false, user.garageNumber ?? "NAN"));
 
           try {
             final bool state = await eventStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsRelay)).first;
@@ -72,7 +72,7 @@ Future<Response> handleRequest(Request request) async {
             return Response.forbidden(jsonEncode({'status': 'error', 'message': 'Access denied'}));
           }
 
-          eventLongPollStreamController.add(true);
+          eventLongPollStreamController.add((true, user.garageNumber ?? "NAN"));
 
           try {
             final bool state = await eventStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsRelay)).first;
@@ -98,7 +98,7 @@ Future<Response> handleRequest(Request request) async {
               garageNumber: user.garageNumber ?? "NULL",
               userKey: "$message",
             );
-            eventLongPollStreamController.add(_lightStatus);
+            eventLongPollStreamController.add((_lightStatus, user.garageNumber ?? "NAN"));
             eventStreamController.add(_lightStatus);
             return Response.ok(jsonEncode({'status': 'success'}));
           } else {
@@ -118,8 +118,8 @@ Future<Response> longPollingHandler(Request request) async {
   }
 
   try {
-    final bool state = await eventLongPollStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsLongPool)).first;
-    return Response.ok(jsonEncode({'status': 'success', 'LightIs': state}));
+    final (bool, String) state = await eventLongPollStreamController.stream.timeout(const Duration(milliseconds: _waitMillisecondsLongPool)).first;
+    return Response.ok(jsonEncode({'status': 'success', 'LightIs': state.$1, 'garage': state.$2}));
   } catch (e) {
     return Response.internalServerError(body: 'long pool timeout');
   }
