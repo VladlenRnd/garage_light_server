@@ -20,6 +20,7 @@ bool _lightStatus = false;
 bool _neadInitFromRelay = true;
 
 String arduinoFirmwareVersion = "---";
+DateTime? lastArduinoUpdate;
 
 const int _waitMillisecondsRelay = 15000;
 
@@ -93,6 +94,7 @@ Future<Response> handleRequest(Request request) async {
             _lightStatus = data["LightIs"];
             message = data["message"];
             arduinoFirmwareVersion = data["version"] ?? "Arduino send NULL";
+            lastArduinoUpdate = DateTime.now();
             await setLogAction(
               action: "Relay status is: $_lightStatus",
               garageNumber: user.garageNumber ?? "NULL",

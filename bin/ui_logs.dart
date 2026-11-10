@@ -1,3 +1,5 @@
+import "package:intl/intl.dart";
+
 import "server.dart";
 
 String getHtmlLogs(List<dynamic> logs) {
@@ -159,7 +161,10 @@ String getHtmlLogs(List<dynamic> logs) {
 </head>
 <body>
   <h1>Logs</h1>
-  <h3>Arduino current version: $arduinoFirmwareVersion</3>
+  <h4>Arduino current version: $arduinoFirmwareVersion</3>
+  <h4>Last time update Status: ${lastArduinoUpdate == null ? "No Data" : DateFormat("dd/MM/yyyy HH:mm").format(lastArduinoUpdate!)}</3>
+  <h4 style="color: red;">${lastArduinoUpdate != null ? DateTime.now().difference(lastArduinoUpdate!).inHours > 4 ? "Device is not responding!" : "" : "Device not init"} </h3>
+  
   $groupedLogsHtml
   <script>
     var coll = document.getElementsByClassName("collapsible");
