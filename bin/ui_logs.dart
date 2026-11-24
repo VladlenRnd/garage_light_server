@@ -160,11 +160,27 @@ String getHtmlLogs(List<dynamic> logs) {
   </style>
 </head>
 <body>
-  <h1>Logs</h1>
-  <h4>Arduino current version: $arduinoFirmwareVersion</3>
-  <h4>Last time update Status: ${lastArduinoUpdate == null ? "No Data" : DateFormat("dd/MM/yyyy HH:mm").format(lastArduinoUpdate!)}</3>
-  <h4 style="color: red;">${lastArduinoUpdate != null ? DateTime.now().difference(lastArduinoUpdate!).inHours > 4 ? "Device is not responding!" : "" : "Device not init"} </h3>
-  
+<h1>Logs</h1>
+<hr>
+
+<h4>Arduino current version: $arduinoFirmwareVersion</h4>
+<h4>
+  First Init Time:
+  <span style="color: ${firstInitArduino == null ? '#dc3545' : '#28a745'};">
+    ${firstInitArduino == null ? "No Data" : DateFormat("dd/MM/yyyy HH:mm:ss").format(firstInitArduino!)}
+  </span>
+</h4>
+<h4>
+  Last Status Update:
+  <span style="color: ${lastArduinoUpdate == null ? '#dc3545' : '#28a745'};">
+    ${lastArduinoUpdate == null ? "No Data" : DateFormat("dd/MM/yyyy HH:mm:ss").format(lastArduinoUpdate!)}
+  </span>
+</h4>
+<h4 style="color: #dc3545;">
+  ${firstInitArduino == null ? "Device not initialized!" : DateTime.now().difference(lastArduinoUpdate ?? firstInitArduino!) > const Duration(hours: 4) ? "Device is not responding!" : ""}
+</h4>
+<hr>
+
   $groupedLogsHtml
   <script>
     var coll = document.getElementsByClassName("collapsible");
