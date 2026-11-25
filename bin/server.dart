@@ -96,7 +96,7 @@ Future<Response> handleRequest(Request request) async {
             _lightStatus = data["LightIs"];
             message = data["message"];
             arduinoFirmwareVersion = data["version"] ?? "Arduino send NULL";
-            lastArduinoUpdate = DateTime.now();
+            lastArduinoUpdate = await NTP.now();
             firstInitArduino ??= await NTP.now();
 
             await setLogAction(
